@@ -552,7 +552,7 @@ int main(int argc, char **argv) {
       auto start2 = chrono::high_resolution_clock::now();
       
       // Execute z3 solver with 60s timeout 
-      string solve = "z3 -T:60 -smt2 " + outputname;
+      string solve = "/home/mirko/Dropbox/sqc/z3/z3-4.4.0-x64-ubuntu-14.04/bin/z3 -T:60 -smt2 " + outputname;
       string result = exec(solve.c_str());
       if (result.substr(0, 5) == "unsat")
 	ok = true;

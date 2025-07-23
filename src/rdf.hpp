@@ -75,5 +75,20 @@ private:
   string _name;
 };
 
+class LiteralInt : public RDFValue {
+public:
+  LiteralInt(string l)
+    :_lit(l)
+  {
+    _str = l;
+  }
+  RDFValue* clone() const {
+    return new LiteralInt(_lit);
+  }
+  string prepareString();
+private:
+  string _lit;
+};
+
 
 #endif

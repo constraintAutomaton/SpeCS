@@ -45,6 +45,10 @@ string Literal::prepareString() {
     return _str = "<l_" + _lit + ">";
 }
 
+string LiteralInt::prepareString() {
+  return _str = _lit;
+}
+
 string Variable::prepareString(int i) {
   string v = _var;
   return _str = "<" + v.replace(0, 1, "v" + to_string(i) + "_") + ">";
