@@ -22,6 +22,13 @@ void yyerror(string s) {
   exit(EXIT_FAILURE);
 }
 
+/* Path to the z3 binary. Resolved from PATH by default, and overridable
+   with the SPECS_Z3 environment variable for non-standard installations. */
+string z3Binary() {
+  const char *z3 = getenv("SPECS_Z3");
+  return (z3 != nullptr && z3[0] != '\0') ? string(z3) : string("z3");
+}
+
 /* Function for executing cmd command */
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;
@@ -552,7 +559,7 @@ int main(int argc, char **argv) {
       auto start2 = chrono::high_resolution_clock::now();
       
       // Execute z3 solver with 60s timeout 
-      string solve = "/home/mirko/Dropbox/sqc/z3/z3-4.4.0-x64-ubuntu-14.04/bin/z3 -T:60 -smt2 " + outputname;
+      string solve = z3Binary() + " -T:60 -smt2 " + outputname;
       string result = exec(solve.c_str());
       if (result.substr(0, 5) == "unsat")
 	ok = true;
