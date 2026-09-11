@@ -36,6 +36,13 @@ string z3Timeout() {
   return (timeout != nullptr && timeout[0] != '\0') ? string(timeout) : string("60");
 }
 
+/* Virtual memory limit given to each z3 call, in megabytes. Overridable with
+   the SPECS_Z3_MEMORY environment variable. */
+string z3Memory() {
+  const char *memory = getenv("SPECS_Z3_MEMORY");
+  return (memory != nullptr && memory[0] != '\0') ? string(memory) : string("4096");
+}
+
 /* Function for executing cmd command */
 std::string exec(const char* cmd) {
     std::array<char, 128> buffer;
@@ -279,6 +286,7 @@ int main(int argc, char **argv) {
     bool ok = false;
     bool timedOut = false;
     bool unknown = false;
+    bool outOfMemory = false;
     for (unsigned union_j = 0; union_j < superQuery->numberOfConjuctive(); union_j++) {
       bool check_unsatisfiability_of_q1 = false;
       //cout << union_i << " " << union_j << endl;
@@ -567,8 +575,9 @@ int main(int argc, char **argv) {
       // Measuring times needed for z3
       auto start2 = chrono::high_resolution_clock::now();
       
-      // Execute z3 solver with a configurable timeout (SPECS_Z3_TIMEOUT, default 60s)
-      string solve = z3Binary() + " -T:" + z3Timeout() + " -smt2 " + outputname;
+      // Execute z3 solver with a configurable timeout and memory limit
+      // (SPECS_Z3_TIMEOUT, default 60s; SPECS_Z3_MEMORY, default 4096 MB)
+      string solve = z3Binary() + " -T:" + z3Timeout() + " -memory:" + z3Memory() + " -smt2 " + outputname + " 2>&1";
       string result = exec(solve.c_str());
       if (result.substr(0, 5) == "unsat") {
 	ok = true;
@@ -576,6 +585,8 @@ int main(int argc, char **argv) {
 	timedOut = true;
       } else if (result.substr(0, 7) == "unknown") {
 	unknown = true;
+      } else if (result.find("out of memory") != string::npos) {
+	outOfMemory = true;
       }
 
       // Measuring times needed for z3
@@ -592,6 +603,8 @@ int main(int argc, char **argv) {
 	cout << "timeout - " << union_i << endl;
       } else if (unknown) {
 	cout << "unknown - " << union_i << endl;
+      } else if (outOfMemory) {
+	cout << "out of memory - " << union_i << endl;
       } else {
 	cout << "sat - " << union_i << endl;
       }
